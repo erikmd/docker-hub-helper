@@ -47,6 +47,10 @@ def setminus(s1, s2):
     return list(filter(lambda e: e not in s2, s1))
 
 
+def chomp(byt):
+    return byt.decode('UTF-8').rstrip()
+
+
 def fetch(repo):
     check_call(["git", "fetch", "origin"],
                cwd=os.path.expanduser(repo))
@@ -60,7 +64,7 @@ def all_remote_branches(repo):
                         "--format", "%(refname:strip=3)",
                         "refs/remotes/origin/"],
                        cwd=os.path.expanduser(repo))
-    return byt.decode('UTF-8').rstrip().split('\n')
+    return chomp(byt).split('\n')
 
 
 def all_local_branches(repo):
@@ -68,7 +72,7 @@ def all_local_branches(repo):
                         "--format", "%(refname:strip=2)",
                         "refs/heads/"],
                        cwd=os.path.expanduser(repo))
-    return byt.decode('UTF-8').rstrip().split('\n')
+    return chomp(byt).split('\n')
 
 
 def local_newer(repo, b, remote_b=''):
@@ -93,6 +97,16 @@ def remote_newer(repo, b, remote_b=''):
     # return 1 if remote_b is newer than remote_b
     # 128 if remote_b doesn't exist
     return ret == 1
+
+
+def local_remote_neq(repo, b, remote_b=''):
+    if not remote_b:
+        remote_b = b + '@{u}'
+    wd = os.path.expanduser(repo)
+    sha_b, sha_remote_b = [chomp(check_output(["git", "rev-parse",
+                                               "--verify", x],
+                                              cwd=wd)) for x in [b, remote_b]]
+    return sha_b != sha_remote_b
 
 
 def branches(repo):
@@ -165,7 +179,8 @@ def rebase(repo, all, branch):
     wd = os.path.expanduser(repo)
     for b in brs:
         remote_b = 'origin/' + b
-        needs_pull = remote_newer(repo, b, remote_b)
+        needs_pull = (not local_newer(repo, b, remote_b)) and \
+            local_remote_neq(repo, b, remote_b)
         newer = remote_b if needs_pull else b
         print("\n* Rebasing %s on master..." % newer,
               file=sys.stderr, flush=True)
@@ -238,14 +253,14 @@ def main(argv):
                                 help='Docker Hub token')
     parser_trigger.set_defaults(func=trigger)
 
-    help_rebase = 'fetch and rebase branches on [origin/]master'
+    help_rebase = 'fetch and rebase branches on master'
     parser_rebase = subparsers.add_parser('rebase',
                                           parents=[parent_parser],
                                           help=help_rebase,
                                           description=help_rebase)
     parser_rebase.add_argument(
         '--all', action='store_true',
-        help='rebase all branches on [origin/]master')
+        help='rebase all branches on master')
     parser_rebase.add_argument(
         '-b', '--branch', action='append',
         help='branch name (can be supplied multiple times)')
