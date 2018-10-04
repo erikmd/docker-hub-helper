@@ -120,13 +120,16 @@ def branches(repo):
     check_call(["git", "branch", "-vv"], cwd=os.path.expanduser(repo))
 
 
-def create(repo, name):
+def create(repo, name, fro=''):
     fetch(repo)
     wd = os.path.expanduser(repo)
-    if remote_newer(repo, 'master', 'origin/master'):
-        check_call(["git", "checkout", "-q", "master"], cwd=wd)
-        check_call(["git", "pull", "--ff-only", "origin", "master"], cwd=wd)
-    check_call(["git", "checkout", "-b", name, "master"], cwd=wd)
+    if not fro:
+        fro = 'master'
+        if remote_newer(repo, 'master', 'origin/master'):
+            check_call(["git", "checkout", "-q", "master"], cwd=wd)
+            check_call(["git", "pull", "--ff-only", "origin", "master"],
+                       cwd=wd)
+    check_call(["git", "checkout", "-b", name, fro], cwd=wd)
     coq_sed(repo, name)
     print("""
 Ensure '%s' has been added as source branch in Docker Hub settings.
@@ -233,6 +236,10 @@ def main(argv):
                                           parents=[parent_parser],
                                           help=help_create,
                                           description=help_create)
+    parser_create.add_argument('--from', dest='fro', metavar='FROM',
+                               action='store',
+                               help='start point \
+                               (default: master, or origin/master if newer)')
     parser_create.add_argument('name', action='store',
                                help='branch name (stable version)')
     parser_create.set_defaults(func=create)
