@@ -25,6 +25,15 @@ Assume the considered Git repo has master as main branch, origin as remote."""
 dflt_repo = os.path.normpath(dirpath + "/../docker-coq")
 
 
+def coq_sed(repo, b):
+    """Coq-specific code"""
+    wd = os.path.expanduser(repo)
+    check_call(['sed', '-i~', '-e', 's/\\(COQ_VERSION\\)=".*"/\\1="%s"/' % b,
+                'Dockerfile'], cwd=wd)
+    call(["git", "commit", "-a", "-m", "Dockerfile for Coq %s" % b, "-e"],
+         cwd=wd)
+
+
 def error(msg):
     print(msg, file=sys.stderr)
     exit(1)
@@ -92,8 +101,11 @@ def create(repo, name):
         newer_master = 'origin/master'
     check_call(["git", "checkout", "-b", name, newer_master],
                cwd=os.path.expanduser(repo))
-    print('''Please "cd %s" and inspect branch %s
-    before running "%s push -n"''' % (repo, name, prog))
+    coq_sed(repo, name)
+    print("""
+Please 'cd %s' then inspect branch '%s'
+and do 'git commit -a --amend' if need be
+before running '%s push -n'.""" % (repo, name, prog))
 
 
 def trigger(image, all, branch, token):
