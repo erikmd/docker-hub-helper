@@ -134,6 +134,8 @@ def trigger(image, all, branch, token):
 
 
 def rebase(repo, all, branch):
+    if not (all or branch):
+        error('Error: no branch specified.')
     fetch(repo)
     avoid_branches = ['HEAD', 'master']
     if all:
