@@ -73,6 +73,17 @@ def local_newer(repo, b, remote_b=''):
     return ret != 0
 
 
+def branches(repo):
+    fetch(repo)
+    avoid_branches = ['HEAD']
+    brs = all_local_branches(repo) + all_remote_branches(repo)
+    brs = setminus(uniqify(brs), avoid_branches)
+    brs.sort()
+    print("Branches locally or remotely available:", brs,
+          file=sys.stderr, flush=True)
+    check_call(["git", "branch", "-vv"], cwd=os.path.expanduser(repo))
+
+
 def create(repo, name):
     fetch(repo)
     if local_newer(repo, 'master', 'origin/master'):
@@ -167,6 +178,11 @@ def main(argv):
 
     subparsers = parser.add_subparsers(help=None)
 
+    parser_br = subparsers.add_parser('branches',
+                                      parents=[parent_parser],
+                                      help='(fetch and) list available branches')
+    parser_br.set_defaults(func=branches)
+
     parser_create = subparsers.add_parser('create',
                                           parents=[parent_parser],
                                           help='(fetch and) create a stable branch from origin/master')
@@ -219,6 +235,7 @@ if __name__ == "__main__":
     main(sys.argv[1:])
 
 # ./docker-hub.py -h
+# ./docker-hub.py branches -h
 # ./docker-hub.py create -h
 # ./docker-hub.py trigger -h
 # ./docker-hub.py rebase -h
