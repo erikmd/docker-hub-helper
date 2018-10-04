@@ -83,6 +83,18 @@ def local_newer(repo, b, remote_b=''):
     return ret != 0
 
 
+def remote_newer(repo, b, remote_b=''):
+    if not remote_b:
+        remote_b = b + '@{u}'
+    wd = os.path.expanduser(repo)
+    ret = call(["git", "log", "--format=", "--exit-code",
+                "%s..%s" % (b, remote_b)], cwd=wd,
+               stdout=DEVNULL, stderr=DEVNULL)
+    # return 1 if remote_b is newer than remote_b
+    # 128 if remote_b doesn't exist
+    return ret == 1
+
+
 def branches(repo):
     fetch(repo)
     avoid_branches = ['HEAD']
@@ -97,7 +109,7 @@ def branches(repo):
 def create(repo, name):
     fetch(repo)
     wd = os.path.expanduser(repo)
-    if not local_newer(repo, 'master', 'origin/master'):
+    if remote_newer(repo, 'master', 'origin/master'):
         check_call(["git", "checkout", "-q", "master"], cwd=wd)
         check_call(["git", "pull", "--ff-only", "origin", "master"], cwd=wd)
     check_call(["git", "checkout", "-b", name, "master"], cwd=wd)
@@ -151,12 +163,8 @@ def rebase(repo, all, branch):
     wd = os.path.expanduser(repo)
     for b in brs:
         remote_b = 'origin/' + b
-        if local_newer(repo, b, remote_b):
-            newer = b
-            needs_pull = False
-        else:
-            newer = remote_b
-            needs_pull = True
+        needs_pull = remote_newer(repo, b, remote_b)
+        newer = remote_b if needs_pull else b
         print("\n* Rebasing %s on master..." % newer,
               file=sys.stderr, flush=True)
         check_call(["git", "checkout", "-q", b], cwd=wd)
