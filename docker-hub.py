@@ -15,7 +15,7 @@ from subprocess import call, check_call, check_output
 import sys
 import time
 
-dirpath = os.path.realpath(os.path.dirname(__file__))
+dirpath = os.path.dirname(os.path.realpath(__file__))
 prog = os.path.basename(__file__)
 version = "0.1.0"
 desc = """A tool to help maintain multi-branches, automated-build repos on Docker Hub.
