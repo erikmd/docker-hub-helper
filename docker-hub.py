@@ -178,20 +178,25 @@ def main(argv):
 
     subparsers = parser.add_subparsers(help=None)
 
+    help_br = 'fetch and list available branches'
     parser_br = subparsers.add_parser('branches',
                                       parents=[parent_parser],
-                                      help='(fetch and) list available branches')
+                                      help=help_br, description=help_br)
     parser_br.set_defaults(func=branches)
 
+    help_create = 'fetch and create a stable branch from [origin/]master'
     parser_create = subparsers.add_parser('create',
                                           parents=[parent_parser],
-                                          help='(fetch and) create a stable branch from origin/master')
+                                          help=help_create,
+                                          description=help_create)
     parser_create.add_argument('name', action='store',
                                help='branch name (stable version)')
     parser_create.set_defaults(func=create)
 
+    help_trigger = 'trigger rebuild of branches'
     parser_trigger = subparsers.add_parser('trigger',
-                                           help='trigger rebuild of branches')
+                                           help=help_trigger,
+                                           description=help_trigger)
     parser_trigger.add_argument(
         '--all', action='store_true',
         help='trigger rebuild of all branches')
@@ -204,20 +209,23 @@ def main(argv):
                                 help='Docker Hub token')
     parser_trigger.set_defaults(func=trigger)
 
+    help_rebase = 'fetch and rebase branches on [origin/]master'
     parser_rebase = subparsers.add_parser('rebase',
                                           parents=[parent_parser],
-                                          help='(fetch and) rebase remote branches on local master')
+                                          help=help_rebase,
+                                          description=help_rebase)
     parser_rebase.add_argument(
         '--all', action='store_true',
-        help='rebase all branches on master')
+        help='rebase all branches on [origin/]master')
     parser_rebase.add_argument(
         '-b', '--branch', action='append',
         help='branch name (can be supplied multiple times)')
     parser_rebase.set_defaults(func=rebase)
 
+    help_push = 'push modified branches to trigger rebuild'
     parser_push = subparsers.add_parser('push',
                                         parents=[parent_parser],
-                                        help='push modified branches to trigger rebuild')
+                                        help=help_push, description=help_push)
     parser_push.add_argument(
         '-n', '--dry-run', action='store_true',
         help='only display the "git push" commands to run')
@@ -234,9 +242,5 @@ def main(argv):
 if __name__ == "__main__":
     main(sys.argv[1:])
 
-# ./docker-hub.py -h
-# ./docker-hub.py branches -h
-# ./docker-hub.py create -h
-# ./docker-hub.py trigger -h
-# ./docker-hub.py rebase -h
-# ./docker-hub.py push -h
+# docker-hub.py -h
+# for c in branches create trigger rebase push; do docker-hub.py $c -h; done
