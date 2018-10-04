@@ -96,12 +96,11 @@ def branches(repo):
 
 def create(repo, name):
     fetch(repo)
-    if local_newer(repo, 'master', 'origin/master'):
-        newer_master = 'master'
-    else:
-        newer_master = 'origin/master'
-    check_call(["git", "checkout", "-b", name, newer_master],
-               cwd=os.path.expanduser(repo))
+    wd = os.path.expanduser(repo)
+    if not local_newer(repo, 'master', 'origin/master'):
+        check_call(["git", "checkout", "-q", "master"], cwd=wd)
+        check_call(["git", "pull", "--ff-only", "origin", "master"], cwd=wd)
+    check_call(["git", "checkout", "-b", name, "master"], cwd=wd)
     coq_sed(repo, name)
     print("""
 Ensure '%s' has been added as source branch in Docker Hub settings.
