@@ -17,7 +17,7 @@ import time
 
 dirpath = os.path.dirname(os.path.realpath(__file__))
 prog = os.path.basename(__file__)
-version = "1.0.0"
+version = "1.0.1"
 desc = """A tool to help maintain multi-branches, automated-build repos on Docker Hub.
 Assume the considered Git repo has master as main branch, origin as remote."""
 
