@@ -165,7 +165,8 @@ def rebase(repo, all, branch):
     wd = os.path.expanduser(repo)
     for b in brs:
         remote_b = 'origin/' + b
-        needs_pull = remote_newer(repo, b, remote_b)
+        needs_pull = not local_newer(repo, b, remote_b)
+        # (!) needs_pull could be further constrained with a SHA1 test
         newer = remote_b if needs_pull else b
         print("\n* Rebasing %s on master..." % newer,
               file=sys.stderr, flush=True)
