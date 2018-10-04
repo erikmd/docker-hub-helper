@@ -11,7 +11,7 @@
 
 import argparse
 import os
-from subprocess import call, check_call, check_output
+from subprocess import call, check_call, check_output, DEVNULL
 import sys
 import time
 
@@ -76,7 +76,8 @@ def local_newer(repo, b, remote_b=''):
         remote_b = b + '@{u}'
     wd = os.path.expanduser(repo)
     ret = call(["git", "log", "--format=", "--exit-code",
-                "%s..%s" % (remote_b, b)], cwd=wd)
+                "%s..%s" % (remote_b, b)], cwd=wd,
+               stdout=DEVNULL, stderr=DEVNULL)
     # return 1 if branch b is newer than remote_b
     # 128 if remote_b doesn't exist
     return ret != 0
@@ -155,9 +156,9 @@ def rebase(repo, all, branch):
         else:
             newer = remote_b
             needs_pull = True
-        print("- Rebasing %s on master..." % newer,
+        print("\n* Rebasing %s on master..." % newer,
               file=sys.stderr, flush=True)
-        check_call(["git", "checkout", b], cwd=wd)
+        check_call(["git", "checkout", "-q", b], cwd=wd)
         if needs_pull:
             check_call(["git", "pull", "--ff-only", "origin", b], cwd=wd)
         check_call(["git", "rebase", "master"], cwd=wd)
