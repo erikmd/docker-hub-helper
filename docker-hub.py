@@ -51,6 +51,24 @@ def chomp(byt):
     return byt.decode('UTF-8').rstrip()
 
 
+# Inspired by https://stackoverflow.com/a/3042378/9164010
+def confirm(message):
+    print(message + ' (Y/n) ', end='')
+    yes = {'yes', 'y', 'ye', ''}
+    no = {'no', 'n'}
+    try:
+        choice = input().lower()
+    except KeyboardInterrupt:
+        print()
+        exit(130)
+    if choice in yes:
+        return True
+    elif choice in no:
+        return False
+    print("Please respond with 'yes' or 'no'", file=sys.stderr)
+    return confirm(message)
+
+
 def fetch(repo):
     check_call(["git", "fetch", "origin"],
                cwd=os.path.expanduser(repo))
@@ -120,14 +138,18 @@ def branches(repo):
     check_call(["git", "branch", "-vv"], cwd=os.path.expanduser(repo))
 
 
-def create(repo, name):
+def create(repo, name, fro='', coq=False):
     fetch(repo)
     wd = os.path.expanduser(repo)
-    if remote_newer(repo, 'master', 'origin/master'):
-        check_call(["git", "checkout", "-q", "master"], cwd=wd)
-        check_call(["git", "pull", "--ff-only", "origin", "master"], cwd=wd)
-    check_call(["git", "checkout", "-b", name, "master"], cwd=wd)
-    coq_sed(repo, name)
+    if not fro:
+        fro = 'master'
+        if remote_newer(repo, 'master', 'origin/master'):
+            check_call(["git", "checkout", "-q", "master"], cwd=wd)
+            check_call(["git", "pull", "--ff-only", "origin", "master"],
+                       cwd=wd)
+    check_call(["git", "checkout", "-b", name, fro], cwd=wd)
+    if coq:
+        coq_sed(repo, name)
     print("""
 Ensure '%s' has been added as source branch in Docker Hub settings.
 
@@ -210,6 +232,24 @@ def push(repo, dry_run):
             time.sleep(2)
 
 
+def delete(repo, name):
+    if not name:
+        error('Error: no branch specified.')
+    if name.find('origin/') >= 0:
+        error("Error: expect a local branch not containing 'origin/',\n"
+              + "but got '%s'" % name)
+    if confirm("Are you sure to delete branch %s and %s (remotely)?"
+               % (name, ('origin/' + name))):
+        wd = os.path.expanduser(repo)
+        status = call(["git", "branch", "-D", name], cwd=wd)
+        if status != 0:
+            if not confirm('Deletion of local branch failed. Continue?'):
+                exit(0)
+        check_call(["git", "push", "origin", ":" + name], cwd=wd)
+        print(("\nEnsure source branch '%s' has been removed"
+               + " in Docker Hub settings.") % name)
+
+
 def main(argv):
     parent_parser = argparse.ArgumentParser(add_help=False)
     parent_parser.add_argument('--repo', action='store', default=dflt_repo,
@@ -233,6 +273,13 @@ def main(argv):
                                           parents=[parent_parser],
                                           help=help_create,
                                           description=help_create)
+    parser_create.add_argument('--from', dest='fro', metavar='FROM',
+                               action='store',
+                               help='start point \
+                               (default: master, or origin/master if newer)')
+    parser_create.add_argument('--coq', action='store_true',
+                               help='run Coq-specific code \
+                               (replace the COQ_VERSION env var)')
     parser_create.add_argument('name', action='store',
                                help='branch name (stable version)')
     parser_create.set_defaults(func=create)
@@ -274,6 +321,15 @@ def main(argv):
         '-n', '--dry-run', action='store_true',
         help='only display the "git push" commands to run')
     parser_push.set_defaults(func=push)
+
+    help_delete = 'delete a local and remote branch'
+    parser_delete = subparsers.add_parser('delete',
+                                          parents=[parent_parser],
+                                          help=help_delete,
+                                          description=help_delete)
+    parser_delete.add_argument('name', action='store',
+                               help='local branch name')
+    parser_delete.set_defaults(func=delete)
 
     args = vars(parser.parse_args(argv))
     if ("func" in args):
