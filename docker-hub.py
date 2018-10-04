@@ -104,9 +104,11 @@ def create(repo, name):
                cwd=os.path.expanduser(repo))
     coq_sed(repo, name)
     print("""
+Ensure '%s' has been added as source branch in Docker Hub settings.
+
 Please 'cd %s' then inspect branch '%s'
 and do 'git commit -a --amend' if need be
-before running '%s push -n'.""" % (repo, name, prog))
+before running '%s push -n'.""" % (name, repo, name, prog))
 
 
 def trigger(image, all, branch, token):
