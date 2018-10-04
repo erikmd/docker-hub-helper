@@ -137,6 +137,7 @@ def trigger(image, all, branch, token):
                     "-X", "POST",
                     "https://registry.hub.docker.com/u/%s/trigger/%s/"
                     % (image, token)])
+        print()
     else:
         for b in branch:
             check_call(["curl", "-H", "Content-Type: application/json",
@@ -145,6 +146,7 @@ def trigger(image, all, branch, token):
                         "-X", "POST",
                         "https://registry.hub.docker.com/u/%s/trigger/%s/"
                         % (image, token)])
+            print()
 
 
 def rebase(repo, all, branch):
