@@ -184,12 +184,12 @@ def push(repo, dry_run):
             todo.append(b)
     for b in todo:
         if dry_run:
-            print("git push --force-with-lease -u origin %s" % b)
+            print("git push --force-with-lease -u origin %s:%s" % (b, b))
         else:
             print("\n* Force-pushing %s to origin..." % b,
                   file=sys.stderr, flush=True)
             check_call(["git", "push", "--force-with-lease", "-u", "origin",
-                        b], cwd=wd)
+                        "%s:%s" % (b, b)], cwd=wd)
             time.sleep(2)
 
 
