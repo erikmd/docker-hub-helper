@@ -253,14 +253,14 @@ def main(argv):
                                 help='Docker Hub token')
     parser_trigger.set_defaults(func=trigger)
 
-    help_rebase = 'fetch and rebase branches on [origin/]master'
+    help_rebase = 'fetch and rebase branches on master'
     parser_rebase = subparsers.add_parser('rebase',
                                           parents=[parent_parser],
                                           help=help_rebase,
                                           description=help_rebase)
     parser_rebase.add_argument(
         '--all', action='store_true',
-        help='rebase all branches on [origin/]master')
+        help='rebase all branches on master')
     parser_rebase.add_argument(
         '-b', '--branch', action='append',
         help='branch name (can be supplied multiple times)')
