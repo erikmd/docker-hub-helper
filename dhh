@@ -342,5 +342,5 @@ def main(argv):
 if __name__ == "__main__":
     main(sys.argv[1:])
 
-# docker-hub.py -h
-# for c in branches create trigger rebase push; do docker-hub.py $c -h; done
+# dhh -h
+# for c in branches create trigger rebase push; do dhh $c -h; done
