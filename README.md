@@ -9,6 +9,28 @@ to help maintain multi-branches, automated-build repos on Docker Hub.
 
 Put this program in the `PATH` and run: `dhh -h`
 
+## Usage summary
+
+```bash
+usage: dhh [-h] [--version] {branches,create,trigger,rebase,push,delete} ...
+
+A tool to help maintain multi-branches, automated-build repos on Docker Hub.
+Assume the considered Git repo has master as main branch, origin as remote.
+
+positional arguments:
+  {branches,create,trigger,rebase,push,delete}
+    branches            fetch and list available branches
+    create              fetch and create a stable branch from [origin/]master
+    trigger             trigger rebuild of branches
+    rebase              fetch and rebase branches on master
+    push                push modified branches to trigger rebuild
+    delete              delete a local and remote branch
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
+```
+
 ## Example
 
 To dockerize a new stable branch of Coq, e.g. the patchlevel `8.8.2`:

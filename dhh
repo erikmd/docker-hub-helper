@@ -343,4 +343,4 @@ if __name__ == "__main__":
     main(sys.argv[1:])
 
 # dhh -h
-# for c in branches create trigger rebase push; do dhh $c -h; done
+# for c in branches create trigger rebase push delete; do dhh $c -h; done
