@@ -129,11 +129,24 @@ def local_remote_neq(repo, b, remote_b=''):
 
 def branches(repo):
     fetch(repo)
+    wd = os.path.expanduser(repo)
     avoid_branches = ['HEAD']
-    brs = all_local_branches(repo) + all_remote_branches(repo)
+    brs = all_remote_branches(repo)
     brs = setminus(uniqify(brs), avoid_branches)
     brs.sort()
-    print("Branches locally or remotely available:", brs,
+    print("Branches available in the remote:", brs,
+          file=sys.stderr, flush=True)
+    brs = setminus(all_remote_branches(repo), all_local_branches(repo))
+    brs = setminus(uniqify(brs), avoid_branches)
+    brs.sort()
+    for b in brs:
+        print("\n* Retrieving branch %s..." % b,
+              file=sys.stderr, flush=True)
+        check_call(["git", "checkout", b], cwd=wd)
+    brs = all_local_branches(repo)
+    brs = setminus(uniqify(brs), avoid_branches)
+    brs.sort()
+    print("\nBranches (now) locally available:", brs, "\n",
           file=sys.stderr, flush=True)
     check_call(["git", "branch", "-vv"], cwd=os.path.expanduser(repo))
 
@@ -262,7 +275,7 @@ def main(argv):
 
     subparsers = parser.add_subparsers(help=None)
 
-    help_br = 'fetch and list available branches'
+    help_br = 'fetch, checkout and list remote branches'
     parser_br = subparsers.add_parser('branches',
                                       parents=[parent_parser],
                                       help=help_br, description=help_br)
