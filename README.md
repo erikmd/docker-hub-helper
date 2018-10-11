@@ -14,12 +14,12 @@ Put this program in the `PATH` and run: `dhh -h`
 ```bash
 usage: dhh [-h] [--version] {branches,create,trigger,rebase,push,delete} ...
 
-A tool to help maintain multi-branches, automated-build repos on Docker Hub.
-Assume the considered Git repo has master as main branch, origin as remote.
+A tool to help maintain multi-branches, automated-build repos on Docker Hub. Assume the
+considered Git repo has master as main branch, origin as remote.
 
 positional arguments:
   {branches,create,trigger,rebase,push,delete}
-    branches            fetch and list available branches
+    branches            fetch, checkout and list remote branches
     create              fetch and create a stable branch from [origin/]master
     trigger             trigger rebuild of branches
     rebase              fetch and rebase branches on master
