@@ -293,7 +293,7 @@ def main(argv):
         help='trigger rebuild of all branches')
     parser_trigger.add_argument(
         '-b', '--branch', action='append',
-        help='branch name (can be supplied multiple times)')
+        help='trigger BRANCH build (can be supplied multiple times)')
     parser_trigger.add_argument('image', action='store',
                                 help='user/repo on Docker Hub')
     parser_trigger.add_argument('token', action='store',
