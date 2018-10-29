@@ -263,6 +263,35 @@ def delete(repo, name):
                + " in Docker Hub settings.") % name)
 
 
+def reset(repo, all, branch):
+    if not (all or branch):
+        error('Error: no branch specified.')
+    avoid_branches = ['HEAD']
+    if all:
+        brs = all_local_branches(repo)
+    else:
+        brs = branch
+    brs = setminus(uniqify(brs), avoid_branches)
+    brs.sort()
+    print("Specified branches:", brs, file=sys.stderr, flush=True)
+
+    def lambda_diff(b):
+        return local_remote_neq(repo, b, 'origin/' + b)
+    brs = list(filter(lambda_diff, brs))
+    brs.sort()
+    if brs:
+        print("Branches to reset:", brs, file=sys.stderr, flush=True)
+        wd = os.path.expanduser(repo)
+        for b in brs:
+            remote_b = 'origin/' + b
+            print("\n* Resetting %s w.r.t. %s..." % (b, remote_b),
+                  file=sys.stderr, flush=True)
+            check_call(["git", "checkout", "-q", b], cwd=wd)
+            check_call(["git", "reset", "--hard", remote_b], cwd=wd)
+    else:
+        print("No branch to reset.", file=sys.stderr, flush=True)
+
+
 def main(argv):
     parent_parser = argparse.ArgumentParser(add_help=False)
     parent_parser.add_argument('--repo', action='store', default=dflt_repo,
@@ -280,6 +309,20 @@ def main(argv):
                                       parents=[parent_parser],
                                       help=help_br, description=help_br)
     parser_br.set_defaults(func=branches)
+
+    help_reset = 'reset specified branches w.r.t. origin'
+    parser_reset = subparsers.add_parser('reset',
+                                         parents=[parent_parser],
+                                         help=help_reset,
+                                         description=help_reset
+                                         + " (useful to update a clone)")
+    parser_reset.add_argument(
+        '--all', action='store_true',
+        help='(for each local BRANCH) git reset --hard origin/BRANCH')
+    parser_reset.add_argument(
+        '-b', '--branch', action='append',
+        help='git checkout BRANCH; git reset --hard origin/BRANCH')
+    parser_reset.set_defaults(func=reset)
 
     help_create = 'fetch and create a stable branch from [origin/]master'
     parser_create = subparsers.add_parser('create',
