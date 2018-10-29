@@ -11,7 +11,7 @@ Put this program in the `PATH` and run: `dhh -h`
 
 ## Usage summary
 
-```bash
+```
 usage: dhh [-h] [--version]
            {branches,reset,create,trigger,rebase,push,delete} ...
 
@@ -35,7 +35,23 @@ optional arguments:
 
 ## Example
 
-To dockerize a new stable branch of Coq, e.g. the patchlevel `8.8.2`:
+* To update the local clone:
+
+```bash
+dhh branches
+dhh reset --all  # if need be
+```
+
+* To add a commit in `master` and rebase stable branches:
+
+```bash
+cd $repo
+git checkout master
+git commit -a -m "Do something"
+dhh rebase --all
+```
+
+* To dockerize a new stable branch of Coq, e.g. the patchlevel `8.8.2`:
 
 ```bash
 dhh branches
@@ -47,7 +63,11 @@ dhh push -n
 dhh push
 ```
 
-Other commands are available (`dhh trigger`, `dhh rebase`)
+* To trigger the rebuild of `dev`:
+
+```bash
+dhh trigger -b dev coqorg/coq $token
+```
 
 ## Author and License
 
