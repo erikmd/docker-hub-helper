@@ -11,6 +11,7 @@
 
 import argparse
 import os
+import re
 from subprocess import call, check_call, check_output, DEVNULL
 import sys
 import time
@@ -25,18 +26,26 @@ Assume the considered Git repo has master as main branch, origin as remote."""
 dflt_repo = os.path.normpath(dirpath + "/../docker-coq")
 
 
-def coq_sed(repo, b):
-    """Coq-specific code"""
-    wd = os.path.expanduser(repo)
-    check_call(['sed', '-i~', '-e', 's/\\(COQ_VERSION\\)=".*"/\\1="%s"/' % b,
-                'Dockerfile'], cwd=wd)
-    call(["git", "commit", "-a", "-m", "Dockerfile for Coq %s" % b, "-e"],
-         cwd=wd)
-
-
 def error(msg):
     print(msg, file=sys.stderr)
     exit(1)
+
+
+def sed_dockerfile(repo, var, b):
+    """Replace 'VAR=…' with 'VAR=B' in the Dockerfile. Use a ~-suffix backup"""
+    wd = os.path.expanduser(repo)
+    # Note: test already performed in create()
+    if not re.match(r'[a-zA-Z_][a-zA-Z0-9_]*', var):
+        error("Error: invalid environment variable name '%s'." % var)
+    check_call(['sed', '-i~', '-e', 's/\\(%s\\)=".*"/\\1="%s"/' % (var, b),
+                'Dockerfile'], cwd=wd)
+    call(["git", "commit", "-a", "-m", "Dockerfile for version %s" % b, "-e"],
+         cwd=wd)
+
+
+def coq_sed(repo, b):
+    """Coq-specific code"""
+    sed_dockerfile(repo, 'COQ_VERSION', b)
 
 
 def uniqify(s):
@@ -151,7 +160,11 @@ def branches(repo):
     check_call(["git", "branch", "-vv"], cwd=os.path.expanduser(repo))
 
 
-def create(repo, name, fro='', coq=False):
+def create(repo, name, fro='', coq=False, var=False):
+    if var and coq:
+        error('Error: only one arg allowed among "--sed", "--coq".')
+    if var and not re.match(r'[a-zA-Z_][a-zA-Z0-9_]*', var):
+        error("Error: invalid environment variable name '%s'." % var)
     fetch(repo)
     wd = os.path.expanduser(repo)
     if not fro:
@@ -163,6 +176,8 @@ def create(repo, name, fro='', coq=False):
     check_call(["git", "checkout", "-b", name, fro], cwd=wd)
     if coq:
         coq_sed(repo, name)
+    if var:
+        sed_dockerfile(repo, var, name)
     print("""
 Ensure '%s' has been added as source branch in Docker Hub settings.
 
@@ -330,13 +345,16 @@ def main(argv):
                                           help=help_create,
                                           description=help_create
                                           + " (the newest)")
+    parser_create.add_argument('--sed', action='store',
+                               metavar='VAR', dest='var',
+                               help='replace VAR=… with \
+                               specified version VAR=NAME')
+    parser_create.add_argument('--coq', action='store_true',
+                               help='same as: --sed COQ_VERSION')
     parser_create.add_argument('--from', dest='fro', metavar='FROM',
                                action='store',
                                help='start point \
                                (default: master, or origin/master if newer)')
-    parser_create.add_argument('--coq', action='store_true',
-                               help='run Coq-specific code \
-                               (replace the COQ_VERSION env var)')
     parser_create.add_argument('name', action='store',
                                help='branch name (stable version)')
     parser_create.set_defaults(func=create)

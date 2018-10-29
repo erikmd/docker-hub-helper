@@ -55,7 +55,7 @@ dhh rebase --all
 
 ```bash
 dhh branches
-dhh create --coq --from=8.8.1 8.8.2
+dhh create --sed COQ_VERSION --from=8.8.1 8.8.2
   # open Docker Hub's build settings
   # and replace "8.8.1" with "8.8.2"; then
 dhh delete 8.8.1
