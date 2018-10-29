@@ -266,9 +266,12 @@ def delete(repo, name):
     if name.find('origin/') >= 0:
         error("Error: expect a local branch not containing 'origin/',\n"
               + "but got '%s'" % name)
+    if name == 'master':
+        error('Error: expect a local stable branch, not master.')
     if confirm("Are you sure to delete branch %s and %s (remotely)?"
                % (name, ('origin/' + name))):
         wd = os.path.expanduser(repo)
+        check_call(["git", "checkout", "master"], cwd=wd)
         status = call(["git", "branch", "-D", name], cwd=wd)
         if status != 0:
             if not confirm('Deletion of local branch failed. Continue?'):
