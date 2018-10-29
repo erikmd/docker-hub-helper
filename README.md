@@ -33,9 +33,15 @@ optional arguments:
   --version             show program's version number and exit
 ```
 
-## Example
+The location of the local Git repo can be specified by an argument
+`--repo …/path/to/git/repo`, that is accepted by all sub-commands
+(except `trigger`).
 
-* To update the local clone:
+## Examples
+
+The `--repo REPO` argument is omitted in the examples below.
+
+* To update a local clone:
 
 ```bash
 dhh branches
@@ -51,7 +57,7 @@ git commit -a -m "Do something"
 dhh rebase --all
 ```
 
-* To dockerize a new stable branch of Coq, e.g. the patchlevel `8.8.2`:
+* To dockerize a new point release of Coq, e.g. the patchlevel `8.8.2`:
 
 ```bash
 dhh branches
@@ -59,6 +65,17 @@ dhh create --sed COQ_VERSION --from=8.8.1 8.8.2
   # open Docker Hub's build settings
   # and replace "8.8.1" with "8.8.2"; then
 dhh delete 8.8.1
+dhh push -n
+dhh push
+```
+
+* To dockerize a new stable release of Coq, e.g. the version `8.9.0`:
+
+```bash
+dhh branches
+dhh create --sed COQ_VERSION 8.9.0
+  # open Docker Hub's build settings
+  # and add "8.9.0"; then
 dhh push -n
 dhh push
 ```
