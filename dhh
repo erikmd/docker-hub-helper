@@ -285,7 +285,8 @@ def main(argv):
     parser_create = subparsers.add_parser('create',
                                           parents=[parent_parser],
                                           help=help_create,
-                                          description=help_create)
+                                          description=help_create
+                                          + " (the newest)")
     parser_create.add_argument('--from', dest='fro', metavar='FROM',
                                action='store',
                                help='start point \
