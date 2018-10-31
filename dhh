@@ -166,7 +166,7 @@ def extract_dict(listvar2):
     for var2 in listvar2:
         list2 = re.split(r'=', var2)
         if len(list2) != 2:
-            error("Error: invalid argument '--sed' '%s'." % var2)
+            error("Error: invalid argument '-e' '%s'." % var2)
         var, val = list2
         if not re.match(r'[a-zA-Z_][a-zA-Z0-9_]*', var):
             error("Error: invalid environment variable name '%s'." % var)
@@ -176,7 +176,7 @@ def extract_dict(listvar2):
 
 def check_coq_arg(coq, dictvar):
     if coq and coq_var in dictvar:
-        error("Error: incompatible arguments '--coq' and '--sed'.")
+        error("Error: incompatible arguments '--coq' and '-e'.")
 
 
 def create(repo, name, fro='', coq=False, var=None):
@@ -367,12 +367,12 @@ def main(argv):
                                           help=help_create,
                                           description=help_create
                                           + " (the newest)")
-    parser_create.add_argument('--sed', action='append',
+    parser_create.add_argument('-e', action='append',
                                metavar='VAR=VAL', dest='var',
                                help='replace VAR=… with VAR=VAL'
                                + ' (can be supplied several times)')
     parser_create.add_argument('--coq', action='store_true',
-                               help='same as: --sed ' + coq_var + '=NAME')
+                               help='same as -e ' + coq_var + '=NAME')
     parser_create.add_argument('--from', dest='fro', metavar='FROM',
                                action='store',
                                help='start point \
