@@ -370,7 +370,7 @@ def main(argv):
     parser_create.add_argument('--sed', action='append',
                                metavar='VAR=VAL', dest='var',
                                help='replace VAR=… with VAR=VAL'
-                               + ' (can be supplied multiple times)')
+                               + ' (can be supplied several times)')
     parser_create.add_argument('--coq', action='store_true',
                                help='same as: --sed ' + coq_var + '=NAME')
     parser_create.add_argument('--from', dest='fro', metavar='FROM',
@@ -390,7 +390,7 @@ def main(argv):
         help='trigger rebuild of all branches')
     parser_trigger.add_argument(
         '-b', '--branch', action='append',
-        help='trigger BRANCH build (can be supplied multiple times)')
+        help='trigger BRANCH build (can be supplied several times)')
     parser_trigger.add_argument('image', action='store',
                                 help='user/repo on Docker Hub')
     parser_trigger.add_argument('token', action='store',
@@ -407,7 +407,7 @@ def main(argv):
         help='rebase all branches on master')
     parser_rebase.add_argument(
         '-b', '--branch', action='append',
-        help='branch name (can be supplied multiple times)')
+        help='branch name (can be supplied several times)')
     parser_rebase.set_defaults(func=rebase)
 
     help_push = 'push modified branches to trigger rebuild'
