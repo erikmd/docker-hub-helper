@@ -61,7 +61,7 @@ dhh rebase --all
 
 ```bash
 dhh branches
-dhh create --sed COQ_VERSION --from=8.8.1 8.8.2
+dhh create -e COQ_VERSION=8.8.2 --from=8.8.1 8.8.2
   # open Docker Hub's build settings
   # and replace "8.8.1" with "8.8.2"; then
 dhh delete 8.8.1
@@ -73,7 +73,7 @@ dhh push
 
 ```bash
 dhh branches
-dhh create --sed COQ_VERSION 8.9.0
+dhh create -e COQ_VERSION=8.9.0 8.9.0
   # open Docker Hub's build settings
   # and add "8.9.0"; then
 dhh push -n
