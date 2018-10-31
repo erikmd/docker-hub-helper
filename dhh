@@ -24,6 +24,7 @@ Assume the considered Git repo has master as main branch, origin as remote."""
 
 # default values
 dflt_repo = os.path.normpath(dirpath + "/../docker-coq")
+coq_var = "COQ_VERSION"
 
 
 def error(msg):
@@ -31,21 +32,21 @@ def error(msg):
     exit(1)
 
 
-def sed_dockerfile(repo, var, b):
-    """Replace 'VAR=…' with 'VAR=B' in the Dockerfile. Use a ~-suffix backup"""
+def sed_dockerfile(repo, dictvar, b):
+    """Replace 'VAR=…' with 'VAR=VAL' in Dockerfile. Use a ~-suffix backup"""
+    if not dictvar:
+        return
     wd = os.path.expanduser(repo)
-    # Note: test already performed in create()
-    if not re.match(r'[a-zA-Z_][a-zA-Z0-9_]*', var):
-        error("Error: invalid environment variable name '%s'." % var)
-    check_call(['sed', '-i~', '-e', 's/\\(%s\\)=".*"/\\1="%s"/' % (var, b),
-                'Dockerfile'], cwd=wd)
+    script = ''
+    for var in dictvar:
+        val = dictvar[var]
+        # Note: test already performed in extract_dict()
+        if not re.match(r'[a-zA-Z_][a-zA-Z0-9_]*', var):
+            error("Error: invalid environment variable name '%s'." % var)
+        script += 's/\\(%s\\)="[^"]*"/\\1="%s"/;' % (var, val)
+    check_call(['sed', '-i~', '-e', script, 'Dockerfile'], cwd=wd)
     call(["git", "commit", "-a", "-m", "Dockerfile for version %s" % b, "-e"],
          cwd=wd)
-
-
-def coq_sed(repo, b):
-    """Coq-specific code"""
-    sed_dockerfile(repo, 'COQ_VERSION', b)
 
 
 def uniqify(s):
@@ -160,11 +161,32 @@ def branches(repo):
     check_call(["git", "branch", "-vv"], cwd=os.path.expanduser(repo))
 
 
-def create(repo, name, fro='', coq=False, var=False):
-    if var and coq:
-        error('Error: only one arg allowed among "--sed", "--coq".')
-    if var and not re.match(r'[a-zA-Z_][a-zA-Z0-9_]*', var):
-        error("Error: invalid environment variable name '%s'." % var)
+def extract_dict(listvar2):
+    res = {}
+    for var2 in listvar2:
+        list2 = re.split(r'=', var2)
+        if len(list2) != 2:
+            error("Error: invalid argument '--sed' '%s'." % var2)
+        var, val = list2
+        if not re.match(r'[a-zA-Z_][a-zA-Z0-9_]*', var):
+            error("Error: invalid environment variable name '%s'." % var)
+        res[var] = val
+    return res
+
+
+def check_coq_arg(coq, dictvar):
+    if coq and coq_var in dictvar:
+        error("Error: incompatible arguments '--coq' and '--sed'.")
+
+
+def create(repo, name, fro='', coq=False, var=None):
+    if not var:
+        var = {}
+    dictvar = extract_dict(var)
+    check_coq_arg(coq, dictvar)
+    if coq:
+        dictvar[coq_var] = name
+
     fetch(repo)
     wd = os.path.expanduser(repo)
     if not fro:
@@ -174,10 +196,7 @@ def create(repo, name, fro='', coq=False, var=False):
             check_call(["git", "pull", "--ff-only", "origin", "master"],
                        cwd=wd)
     check_call(["git", "checkout", "-b", name, fro], cwd=wd)
-    if coq:
-        coq_sed(repo, name)
-    if var:
-        sed_dockerfile(repo, var, name)
+    sed_dockerfile(repo, dictvar, name)
     print("""
 Ensure '%s' has been added as source branch in Docker Hub settings.
 
@@ -348,12 +367,12 @@ def main(argv):
                                           help=help_create,
                                           description=help_create
                                           + " (the newest)")
-    parser_create.add_argument('--sed', action='store',
-                               metavar='VAR', dest='var',
-                               help='replace VAR=… with \
-                               specified version VAR=NAME')
+    parser_create.add_argument('--sed', action='append',
+                               metavar='VAR=VAL', dest='var',
+                               help='replace VAR=… with VAR=VAL'
+                               + ' (can be supplied multiple times)')
     parser_create.add_argument('--coq', action='store_true',
-                               help='same as: --sed COQ_VERSION')
+                               help='same as: --sed ' + coq_var + '=NAME')
     parser_create.add_argument('--from', dest='fro', metavar='FROM',
                                action='store',
                                help='start point \
