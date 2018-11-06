@@ -69,13 +69,25 @@ dhh push -n
 dhh push
 ```
 
+* To dockerize a new beta release of Coq, e.g. the version `8.9+beta1`:
+
+```bash
+dhh branches
+dhh create --from dev -e COQ_VERSION=8.9+beta1 8.9-beta1
+  # open Docker Hub's build settings
+  # and add "8.9-beta1"; then
+dhh push -n
+dhh push
+```
+
 * To dockerize a new stable release of Coq, e.g. the version `8.9.0`:
 
 ```bash
 dhh branches
 dhh create -e COQ_VERSION=8.9.0 8.9.0
   # open Docker Hub's build settings
-  # and add "8.9.0"; then
+  # and replace "8.9-beta1" with "8.9.0"; then
+dhh delete 8.9-beta1
 dhh push -n
 dhh push
 ```
