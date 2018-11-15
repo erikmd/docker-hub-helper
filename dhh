@@ -367,17 +367,17 @@ def main(argv):
                                           help=help_create,
                                           description=help_create
                                           + " (the newest)")
-    parser_create.add_argument('-e', action='append',
-                               metavar='VAR=VAL', dest='var',
-                               help='replace VAR=… with VAR=VAL'
-                               + ' (can be supplied several times)')
-    parser_create.add_argument('--coq', action='store_true',
-                               help='same as -e ' + coq_var + '=NAME')
     parser_create.add_argument('--from', dest='fro', metavar='FROM',
                                action='store',
                                help='start point \
                                (default: master, or origin/master if newer)')
-    parser_create.add_argument('name', action='store',
+    parser_create.add_argument('-e', dest='var', action='append',
+                               metavar='VAR=VAL',
+                               help='replace VAR=… with VAR=VAL'
+                               + ' (can be supplied several times)')
+    parser_create.add_argument('--coq', action='store_true',
+                               help='same as -e ' + coq_var + '=NAME')
+    parser_create.add_argument('name', action='store', metavar='NAME',
                                help='branch name (stable version)')
     parser_create.set_defaults(func=create)
 
@@ -391,9 +391,9 @@ def main(argv):
     parser_trigger.add_argument(
         '-b', '--branch', action='append',
         help='trigger BRANCH build (can be supplied several times)')
-    parser_trigger.add_argument('image', action='store',
+    parser_trigger.add_argument('image', action='store', metavar='IMAGE',
                                 help='user/repo on Docker Hub')
-    parser_trigger.add_argument('token', action='store',
+    parser_trigger.add_argument('token', action='store', metavar='TOKEN',
                                 help='Docker Hub token')
     parser_trigger.set_defaults(func=trigger)
 
@@ -424,7 +424,7 @@ def main(argv):
                                           parents=[parent_parser],
                                           help=help_delete,
                                           description=help_delete)
-    parser_delete.add_argument('name', action='store',
+    parser_delete.add_argument('name', action='store', metavar='NAME',
                                help='local branch name')
     parser_delete.set_defaults(func=delete)
 
