@@ -32,7 +32,13 @@ def error(msg):
     exit(1)
 
 
-def sed_dockerfile(repo, dictvar, b):
+def check_from1_tag(from1):
+    # cf https://github.com/docker/distribution/blob/master/reference/regexp.go
+    if not re.match(r'^[a-z0-9]+(?:(?:[._]|__|[-]*)[a-z0-9]+)*(?:/[a-z0-9]+(?:(?:[._]|__|[-]*)[a-z0-9]+)*)*(?:[:][\w][\w.-]{0,127})?$', from1):
+        error("Error: invalid image reference '%s'." % from1)
+
+
+def sed_dockerfile(repo, dictvar, from1, b):
     """Replace 'VAR=…' with 'VAR=VAL' in Dockerfile. Use a ~-suffix backup"""
     if not dictvar:
         return
@@ -44,6 +50,10 @@ def sed_dockerfile(repo, dictvar, b):
         if not re.match(r'[a-zA-Z_][a-zA-Z0-9_]*', var):
             error("Error: invalid environment variable name '%s'." % var)
         script += 's/\\(%s\\)="[^"]*"/\\1="%s"/;' % (var, val)
+    if from1:
+        # Note: test (check_from1_tag) only performed in create()
+        prefix = re.search('^([^/:]+)[/:]', from1).group(1)
+        script += '0,/^FROM %s/{s|\\(^FROM\\s\\).*$|\\1%s|};' % (prefix, from1)
     check_call(['sed', '-i~', '-e', script, 'Dockerfile'], cwd=wd)
     call(["git", "commit", "-a", "-m", "Dockerfile for version %s" % b, "-e"],
          cwd=wd)
@@ -179,13 +189,15 @@ def check_coq_arg(coq, dictvar):
         error("Error: incompatible arguments '--coq' and '-e'.")
 
 
-def create(repo, name, fro='', coq=False, var=None):
+def create(repo, name, fro='', from1='', coq=False, var=None):
     if not var:
         var = {}
     dictvar = extract_dict(var)
     check_coq_arg(coq, dictvar)
     if coq:
         dictvar[coq_var] = name
+    if from1:
+        check_from1_tag(from1)
 
     fetch(repo)
     wd = os.path.expanduser(repo)
@@ -196,7 +208,7 @@ def create(repo, name, fro='', coq=False, var=None):
             check_call(["git", "pull", "--ff-only", "origin", "master"],
                        cwd=wd)
     check_call(["git", "checkout", "-b", name, fro], cwd=wd)
-    sed_dockerfile(repo, dictvar, name)
+    sed_dockerfile(repo, dictvar, from1, name)
     print("""
 Ensure '%s' has been added as source branch in Docker Hub settings.
 
@@ -375,6 +387,10 @@ def main(argv):
                                metavar='VAR=VAL',
                                help='replace VAR=… with VAR=VAL'
                                + ' (can be supplied several times)')
+    parser_create.add_argument('-f', dest='from1', action='store',
+                               metavar='user/repo:tag',
+                               help='replace the first line FROM user/…'
+                               + ' with FROM user/repo:tag')
     parser_create.add_argument('--coq', action='store_true',
                                help='same as -e ' + coq_var + '=NAME')
     parser_create.add_argument('name', action='store', metavar='NAME',
