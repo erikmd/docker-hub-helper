@@ -92,6 +92,18 @@ dhh push -n
 dhh push
 ```
 
+* To dockerize a new stable release of math-comp `1.7.0` with Coq `8.9.0`:
+
+```bash
+cd .../docker-mathcomp
+dhh branches --repo=.
+dhh create --repo=. -f coqorg/coq:8.9 -e MATHCOMP_VERSION=1.7.0 1.7.0-coq-8.9
+  # open Docker Hub's build settings
+  # and add "1.7.0-coq-8.9"; then
+dhh push --repo=. -n
+dhh push --repo=.
+```
+
 * To trigger the rebuild of `dev`:
 
 ```bash
