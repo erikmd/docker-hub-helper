@@ -34,16 +34,15 @@ optional arguments:
 ```
 
 The location of the local Git repo can be specified by an argument
-`--repo …/path/to/git/repo`, that is accepted by all sub-commands
-(except `trigger`).
+`--repo …/path/to/git/repo`, which is accepted by all sub-commands,
+except `trigger`. If the option is omitted, it defaults to `--repo=.`.
 
 ## Examples
-
-The `--repo REPO` argument is omitted in the examples below.
 
 * To update a local clone:
 
 ```bash
+cd $repo
 dhh branches
 dhh reset --all  # if need be
 ```
@@ -60,6 +59,7 @@ dhh rebase --all
 * To dockerize a new point release of Coq, e.g. the patchlevel `8.8.2`:
 
 ```bash
+cd …/docker-coq
 dhh branches
 dhh create --from 8.8.1 -e COQ_VERSION=8.8.2 8.8.2
   # open Docker Hub's build settings
@@ -72,6 +72,7 @@ dhh push
 * To dockerize a new beta release of Coq, e.g. the version `8.9+beta1`:
 
 ```bash
+cd …/docker-coq
 dhh branches
 dhh create --from dev -e COQ_VERSION=8.9+beta1 8.9-beta1
   # open Docker Hub's build settings
@@ -83,6 +84,7 @@ dhh push
 * To dockerize a new stable release of Coq, e.g. the version `8.9.0`:
 
 ```bash
+cd …/docker-coq
 dhh branches
 dhh create -e COQ_VERSION=8.9.0 8.9.0
   # open Docker Hub's build settings
@@ -95,13 +97,13 @@ dhh push
 * To dockerize a new stable release of math-comp `1.7.0` with Coq `8.9.0`:
 
 ```bash
-cd .../docker-mathcomp
-dhh branches --repo=.
-dhh create --repo=. -f coqorg/coq:8.9 -e MATHCOMP_VERSION=1.7.0 1.7.0-coq-8.9
+cd …/docker-mathcomp
+dhh branches
+dhh create -f coqorg/coq:8.9 -e MATHCOMP_VERSION=1.7.0 1.7.0-coq-8.9
   # open Docker Hub's build settings
   # and add "1.7.0-coq-8.9"; then
-dhh push --repo=. -n
-dhh push --repo=.
+dhh push -n
+dhh push
 ```
 
 * To trigger the rebuild of `dev`:
