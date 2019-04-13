@@ -23,7 +23,7 @@ desc = """A tool to help maintain multi-branches, automated-build repos on Docke
 Assume the considered Git repo has master as main branch, origin as remote."""
 
 # default values
-dflt_repo = os.path.normpath(dirpath + "/../docker-coq")
+dflt_repo = os.getcwd()
 coq_var = "COQ_VERSION"
 
 
@@ -344,8 +344,7 @@ def reset(repo, all, branch):
 def main(argv):
     parent_parser = argparse.ArgumentParser(add_help=False)
     parent_parser.add_argument('--repo', action='store', default=dflt_repo,
-                               help=('path to the source git repo (default=%s)'
-                                     % dflt_repo))
+                               help=('path to the source git repo (default=.)'))
 
     parser = argparse.ArgumentParser(prog=prog, description=desc)
     parser.add_argument('--version', action='version',
