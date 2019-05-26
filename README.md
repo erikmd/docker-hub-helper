@@ -74,7 +74,7 @@ dhh push
 ```bash
 cd …/docker-coq
 dhh branches
-dhh create --from dev -e COQ_VERSION=8.9+beta1 8.9-beta1
+dhh create --from beta -e COQ_VERSION=8.9+beta1 8.9-beta1
   # open Docker Hub's build settings
   # and add "8.9-beta1"; then
 dhh push -n
