@@ -40,7 +40,7 @@ except `trigger`. If the option is omitted, it defaults to `--repo=.`.
 
 ## Use cases
 
-### Maintaining a multi-branches Git repo for Docker Hub
+### Goal: help maintain a multi-branches Git repo for Docker Hub
 
 The considered repo should contain:
 
@@ -53,9 +53,11 @@ The considered repo should contain:
   intended to be rebased on `master` then forced-pushed to incorporate
   changes performed in `master`.
 
+### Update if the remote repo was forced-pushed by another maintainer or so
+
 If there are several local clones of this Git repository (e.g. used by
 different maintainers), the following commands allow one to update the
-clone at stake:
+considered clone:
 
 ```bash
 cd $repo
