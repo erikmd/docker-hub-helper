@@ -7,7 +7,8 @@ to help maintain multi-branches, automated-build repos on Docker Hub.
 
 ## Installation
 
-Put this program in the `PATH` and run: `dhh -h`
+* Either put the `dhh` program in the `PATH`;
+* Or add an alias to your `~/.bashrc`, e.g.: `alias dhh='/full/path/to/dhh'`
 
 ## Usage summary
 
