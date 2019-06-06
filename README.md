@@ -38,79 +38,153 @@ The location of the local Git repo can be specified by an argument
 `--repo …/path/to/git/repo`, which is accepted by all sub-commands,
 except `trigger`. If the option is omitted, it defaults to `--repo=.`.
 
-## Examples
+## Use cases
 
-* To update a local clone:
+### Maintaining a multi-branches Git repo for Docker Hub
+
+The considered repo should contain:
+
+* a remote `origin`;
+* a branch `master` that triggers no automated build but is intended
+  to gather changes that are common to all images;
+* several branches that triggers an automated build for the
+  corresponding Docker image; these branches typically have a uniform
+  naming convention (which is albeit not enforced by `dhh`) and are
+  intended to be rebased on `master` then forced-pushed to incorporate
+  changes performed in `master`.
+
+If there are several local clones of this Git repository (e.g. used by
+different maintainers), the following commands allow one to update the
+clone at stake:
 
 ```bash
 cd $repo
+
+# fetch the repo, checkout remote branches, and display differences
+# between remote and local branches thanks to "git branch -vv":
 dhh branches
-dhh reset --all  # if need be
+
+# if need be, one can then reset the local branches with respect to
+# the remote ones:
+dhh reset --all
+
+# for more information on the option -b:
+dhh reset --help
 ```
 
-* To add a commit in `master` and rebase stable branches:
+### Add a commit in `master` and rebase all stable branches
 
 ```bash
 cd $repo
 git checkout master
 git commit -a -m "Do something"
+
+# fetch the repo, and rebase all branches on master (i.e. forall local
+# branch br, replace br with (the newest branch among br and origin/br)
+# rebased on master)
 dhh rebase --all
+
+# for more information on the option -b:
+dhh rebase --help
 ```
 
-* To dockerize a new point release of Coq, e.g. the patchlevel `8.8.2`:
+### Dockerize a new beta release of Coq
+
+E.g., Coq version `8.9+beta1`:
 
 ```bash
 cd …/docker-coq
-dhh branches
-dhh create --from 8.8.1 -e COQ_VERSION=8.8.2 8.8.2
-  # open Docker Hub's build settings
-  # and replace "8.8.1" with "8.8.2"; then
-dhh delete 8.8.1
-dhh push -n
-dhh push
-```
 
-* To dockerize a new beta release of Coq, e.g. the version `8.9+beta1`:
-
-```bash
-cd …/docker-coq
+# fetch the repo
 dhh branches
+
+# note that the last argument is the name of the branch and Docker tag
+# that cannot contain the character "+":
 dhh create --from beta -e COQ_VERSION=8.9+beta1 8.9-beta1
-  # open Docker Hub's build settings
-  # and add "8.9-beta1"; then
+
+# TODO: Open Docker Hub's build settings
+# TODO: Add an automated build rule for "8.9-beta1"
+
+# dry-run before pushing
 dhh push -n
+
+# push local changes to trigger the build
 dhh push
 ```
 
-* To dockerize a new stable release of Coq, e.g. the version `8.9.0`:
+### Dockerize a new stable release of Coq
+
+E.g., Coq version `8.9.0`:
+
+(the main differences w.r.t. the previous section are the absence of
+`--from beta`, and the deletion of the beta branch and image)
 
 ```bash
 cd …/docker-coq
+
+# fetch the repo
 dhh branches
+
 dhh create -e COQ_VERSION=8.9.0 8.9.0
-  # open Docker Hub's build settings
-  # and replace "8.9-beta1" with "8.9.0"; then
+
+# TODO: Open Docker Hub's build settings
+# TODO: Replace "8.9-beta1" with "8.9.0"
+
+# delete the local and remote branch for the beta
 dhh delete 8.9-beta1
+
+# dry-run before pushing
 dhh push -n
+
+# push local changes to trigger the build
 dhh push
 ```
 
-* To dockerize a new stable release of math-comp `1.7.0` with Coq `8.9.0`:
+### Dockerize a new point release of Coq
+
+E.g., Coq patchlevel `8.9.1`:
+
+```bash
+cd …/docker-coq
+
+# fetch the repo
+dhh branches
+
+dhh create --from 8.9.0 -e COQ_VERSION=8.9.1 8.9.1
+
+# TODO: Open Docker Hub's build settings
+# TOOD: Replace "8.9.0" with "8.9.1"
+
+# delete the local and remote branch for the old patchlevel
+dhh delete 8.9.0
+
+# dry-run before pushing
+dhh push -n
+
+# push local changes to trigger the build
+dhh push
+```
+
+### Dockerize a new stable release of math-comp
+
+E.g., math-comp `1.9.0` for Coq `8.7`, `8.8`, `8.9`, `8.10`, `dev`:
 
 ```bash
 cd …/docker-mathcomp
+
+# fetch the repo
 dhh branches
-dhh create -f coqorg/coq:8.9 -e MATHCOMP_VERSION=1.7.0 1.7.0-coq-8.9
-  # open Docker Hub's build settings
-  # and add "1.7.0-coq-8.9"; then
+
+MC=1.9.0; for COQ in 8.7 8.8 8.9 8.10 dev; do \
+  dhh create -f coqorg/coq:$COQ -e MATHCOMP_VERSION=$MC $MC-coq-$COQ; \
+  echo "TODO: Add a Docker Hub automated build rule for $MC-coq-$COQ"; \
+done
+
+# dry-run before pushing
 dhh push -n
+
+# push local changes to trigger the builds
 dhh push
-```
-
-* To trigger the rebuild of `dev`:
-
-```bash
-dhh trigger -b dev coqorg/coq $token
 ```
 
 ## Author and License
