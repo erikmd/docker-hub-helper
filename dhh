@@ -32,6 +32,15 @@ def error(msg):
     exit(1)
 
 
+def versort(lst, reverse=False): 
+    p = re.compile("\.|-")
+    # As .sort() is stable, one can perform the sorting in two passes
+    lam_int = lambda s: [int(u) if u.isdecimal() else 0 for u in p.split(s)]
+    lst.sort(key=lam_int, reverse=reverse)
+    lam_str = lambda s: ['' if u.isdecimal() else u for u in p.split(s)]
+    lst.sort(key=lam_str, reverse=reverse)
+
+
 def check_from1_tag(from1):
     # cf https://github.com/docker/distribution/blob/master/reference/regexp.go
     if not re.match(r'^[a-z0-9]+(?:(?:[._]|__|[-]*)[a-z0-9]+)*(?:/[a-z0-9]+(?:(?:[._]|__|[-]*)[a-z0-9]+)*)*(?:[:][\w][\w.-]{0,127})?$', from1):
@@ -153,19 +162,19 @@ def branches(repo):
     avoid_branches = ['HEAD']
     brs = all_remote_branches(repo)
     brs = setminus(uniqify(brs), avoid_branches)
-    brs.sort()
+    versort(brs)
     print("Branches available in the remote:", brs,
           file=sys.stderr, flush=True)
     brs = setminus(all_remote_branches(repo), all_local_branches(repo))
     brs = setminus(uniqify(brs), avoid_branches)
-    brs.sort()
+    versort(brs)
     for b in brs:
         print("\n* Retrieving branch %s..." % b,
               file=sys.stderr, flush=True)
         check_call(["git", "checkout", b], cwd=wd)
     brs = all_local_branches(repo)
     brs = setminus(uniqify(brs), avoid_branches)
-    brs.sort()
+    versort(brs)
     print("\nBranches (now) locally available:", brs, "\n",
           file=sys.stderr, flush=True)
     check_call(["git", "branch", "-vv"], cwd=os.path.expanduser(repo))
@@ -255,7 +264,7 @@ def rebase(repo, all, branch):
     else:
         brs = branch
     brs = setminus(uniqify(brs), avoid_branches)
-    brs.sort()
+    versort(brs)
     print("Branches to rebase:", brs, file=sys.stderr, flush=True)
     wd = os.path.expanduser(repo)
     for b in brs:
@@ -274,6 +283,7 @@ def rebase(repo, all, branch):
 def push(repo, dry_run):
     avoid_branches = ['HEAD']
     brs = setminus(all_local_branches(repo), avoid_branches)
+    versort(brs, reverse=True)
     print("Local branches:", brs, file=sys.stderr, flush=True)
     wd = os.path.expanduser(repo)
     todo = []
@@ -321,13 +331,13 @@ def reset(repo, all, branch):
     else:
         brs = branch
     brs = setminus(uniqify(brs), avoid_branches)
-    brs.sort()
+    versort(brs)
     print("Specified branches:", brs, file=sys.stderr, flush=True)
 
     def lambda_diff(b):
         return local_remote_neq(repo, b, 'origin/' + b)
     brs = list(filter(lambda_diff, brs))
-    brs.sort()
+    versort(brs)
     if brs:
         print("Branches to reset:", brs, file=sys.stderr, flush=True)
         wd = os.path.expanduser(repo)
