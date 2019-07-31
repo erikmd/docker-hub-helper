@@ -88,6 +88,12 @@ dhh rebase --all
 
 # for more information on the option -b:
 dhh rebase --help
+
+# dry-run before pushing
+dhh push -n
+
+# push local changes to trigger the builds
+dhh push
 ```
 
 ### Dockerize a new beta release of Coq
