@@ -32,7 +32,7 @@ def error(msg):
     exit(1)
 
 
-def versort(lst, reverse=False): 
+def versort(lst, reverse=False):
     p = re.compile("\.|-")
     # As .sort() is stable, one can perform the sorting in two passes
     lam_int = lambda s: [int(u) if u.isdecimal() else 0 for u in p.split(s)]
@@ -96,6 +96,40 @@ def confirm(message):
         return False
     print("Please respond with 'yes' or 'no'", file=sys.stderr)
     return confirm(message)
+
+
+def get_remote_url(repo):
+    byt = check_output(["git", "remote", "get-url", "origin"],
+                       cwd=os.path.expanduser(repo))
+    origin = chomp(byt).split('\n')
+    if len(origin) != 1:
+        error("Error: expected 1-line output, was given:\n%s" % chomp(byt))
+    return origin[0]
+
+
+def hook_print_specific_repos(repo, name):
+    origin = get_remote_url(repo)
+    github_table = {"coq-community/docker-base": "coqorg/base",
+                    "coq-community/docker-coq": "coqorg/coq",
+                    "math-comp/docker-mathcomp": "mathcomp/mathcomp"}
+
+    hint_message = (("\nEnsure '%s' has been added as source branch "
+                     "in Docker Hub settings.")
+                    % name)
+    docker_org = ''
+    for github_org in github_table:
+        if origin.find(github_org) >= 0:
+            docker_repo = github_table[github_org]
+            docker_org = re.search('^([^/:]+)[/:]', docker_repo).group(1)
+            docker_url = ("https://cloud.docker.com/u/%s/repository/docker/%s/builds"
+                          % (docker_org, docker_repo))
+            hint_message += "\nURL: %s/edit" % docker_url
+            hint_message += "\nURL: %s" % docker_url
+
+    if docker_org == 'coqorg':
+        hint_message += ("\n\nTo update as well: "
+                         "https://github.com/coq-community/docker-coq/wiki/Home/_edit")
+    print(hint_message)
 
 
 def fetch(repo):
@@ -218,12 +252,11 @@ def create(repo, name, fro='', from1='', coq=False, var=None):
                        cwd=wd)
     check_call(["git", "checkout", "-b", name, fro], cwd=wd)
     sed_dockerfile(repo, dictvar, from1, name)
+    hook_print_specific_repos(repo, name)
     print("""
-Ensure '%s' has been added as source branch in Docker Hub settings.
-
 Please 'cd %s' then inspect branch '%s'
 and do 'git commit -a --amend' if need be
-before running '%s push -n'.""" % (name, repo, name, prog))
+before running '%s push -n'.""" % (repo, name, prog))
 
 
 def trigger(image, all, branch, token):
