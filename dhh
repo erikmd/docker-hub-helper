@@ -112,15 +112,15 @@ def get_remote_url(repo):
     return origin[0]
 
 
-def hook_print_specific_repos(repo, name):
+def hook_print_specific_repos(repo, name, action='added'):
     origin = get_remote_url(repo)
     github_table = {"coq-community/docker-base": "coqorg/base",
                     "coq-community/docker-coq": "coqorg/coq",
                     "math-comp/docker-mathcomp": "mathcomp/mathcomp"}
 
-    hint_message = (("\nEnsure '%s' has been added as source branch "
+    hint_message = (("\nEnsure '%s' has been %s as source branch "
                      "in Docker Hub settings.")
-                    % name)
+                    % (name, action))
     docker_org = ''
     for github_org in github_table:
         if origin.find(github_org) >= 0:
@@ -257,7 +257,7 @@ def create(repo, name, fro='', from1='', coq=False, var=None):
                        cwd=wd)
     check_call(["git", "checkout", "-b", name, fro], cwd=wd)
     sed_dockerfile(repo, dictvar, from1, name)
-    hook_print_specific_repos(repo, name)
+    hook_print_specific_repos(repo, name, 'added')
     print("""
 Please 'cd %s' then inspect branch '%s'
 and do 'git commit -a --amend' if need be
@@ -356,8 +356,7 @@ def delete(repo, name):
             if not confirm('Deletion of local branch failed. Continue?'):
                 exit(0)
         check_call(["git", "push", "origin", ":" + name], cwd=wd)
-        print(("\nEnsure source branch '%s' has been removed"
-               + " in Docker Hub settings.") % name)
+        hook_print_specific_repos(repo, name, 'removed')
 
 
 def reset(repo, all, branch):
