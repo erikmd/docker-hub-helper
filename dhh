@@ -126,8 +126,8 @@ def hook_print_specific_repos(repo, name):
         if origin.find(github_org) >= 0:
             docker_repo = github_table[github_org]
             docker_org = re.search('^([^/:]+)[/:]', docker_repo).group(1)
-            docker_url = ("https://cloud.docker.com/u/%s/repository/docker/%s/builds"
-                          % (docker_org, docker_repo))
+            docker_url = ("https://hub.docker.com/repository/docker/%s/builds"
+                          % docker_repo)
             hint_message += "\nURL: %s/edit" % docker_url
             hint_message += "\nURL: %s" % docker_url
 
