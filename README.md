@@ -109,9 +109,8 @@ dhh branches
 # note that the last argument is the name of the branch and Docker tag
 # that cannot contain the character "+":
 dhh create --from beta -e COQ_VERSION=8.9+beta1 8.9-beta1
-
 # TODO: Open Docker Hub's build settings
-# TODO: Add an automated build rule for "8.9-beta1"
+# TODO: Add a build rule (Branch, "8.9-beta1", {sourceref}, Dockerfile, /)
 
 # dry-run before pushing
 dhh push -n
@@ -134,12 +133,13 @@ cd …/docker-coq
 dhh branches
 
 dhh create -e COQ_VERSION=8.9.0 8.9.0
-
 # TODO: Open Docker Hub's build settings
-# TODO: Replace "8.9-beta1" with "8.9.0"
+# TODO: Add a build rule (Branch, "8.9.0", {sourceref}, Dockerfile, /)
 
 # delete the local and remote branch for the beta
 dhh delete 8.9-beta1
+# TODO: Open Docker Hub's build settings
+# TODO: Remove build rule "8.9-beta1"
 
 # dry-run before pushing
 dhh push -n
@@ -159,12 +159,13 @@ cd …/docker-coq
 dhh branches
 
 dhh create --from 8.9.0 -e COQ_VERSION=8.9.1 8.9.1
-
 # TODO: Open Docker Hub's build settings
-# TOOD: Replace "8.9.0" with "8.9.1"
+# TODO: Add a build rule (Branch, "8.9.1", {sourceref}, Dockerfile, /)
 
 # delete the local and remote branch for the old patchlevel
 dhh delete 8.9.0
+# TODO: Open Docker Hub's build settings
+# TODO: Remove build rule "8.9.0"
 
 # dry-run before pushing
 dhh push -n
