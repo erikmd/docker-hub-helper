@@ -80,6 +80,11 @@ def chomp(byt):
     return byt.decode('UTF-8').rstrip()
 
 
+def readme():
+    url = "https://github.com/erikmd/docker-hub-helper#readme"
+    check_call(["xdg-open", url])
+
+
 # Inspired by https://stackoverflow.com/a/3042378/9164010
 def confirm(message):
     print(message + ' (Y/n) ', end='')
@@ -394,6 +399,13 @@ def main(argv):
                         version=('%(prog)s version ' + version))
 
     subparsers = parser.add_subparsers(help=None)
+
+    help_readme = 'open the GitHub readme for docker-hub-helper'
+    parser_readme = subparsers.add_parser('readme',
+                                          # parents=[parent_parser],
+                                          help=help_readme,
+                                          description=help_readme)
+    parser_readme.set_defaults(func=readme)
 
     help_br = 'fetch, checkout and list remote branches'
     parser_br = subparsers.add_parser('branches',
