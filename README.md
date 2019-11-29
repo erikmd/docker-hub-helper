@@ -37,7 +37,8 @@ optional arguments:
 
 The location of the local Git repo can be specified by an argument
 `--repo …/path/to/git/repo`, which is accepted by all sub-commands,
-except `trigger`. If the option is omitted, it defaults to `--repo=.`.
+except `readme` and `trigger`. If the option is omitted, it defaults
+to `--repo=.`.
 
 ## Use cases
 
