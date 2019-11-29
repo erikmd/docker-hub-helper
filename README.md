@@ -14,13 +14,14 @@ to help maintain multi-branches, automated-build repos on Docker Hub.
 
 ```
 usage: dhh [-h] [--version]
-           {branches,reset,create,trigger,rebase,push,delete} ...
+           {readme,branches,reset,create,trigger,rebase,push,delete} ...
 
 A tool to help maintain multi-branches, automated-build repos on Docker Hub.
 Assume the considered Git repo has master as main branch, origin as remote.
 
 positional arguments:
-  {branches,reset,create,trigger,rebase,push,delete}
+  {readme,branches,reset,create,trigger,rebase,push,delete}
+    readme              open the GitHub readme for docker-hub-helper
     branches            fetch, checkout and list remote branches
     reset               reset specified branches w.r.t. origin
     create              fetch and create a stable branch from [origin/]master
