@@ -1,5 +1,9 @@
 # docker-hub-helper
 
+**NOTE: this repository is not maintained anymore**. This tool is
+subsumed by the features provided by the
+[`docker-keeper`](https://gitlab.com/erikmd/docker-keeper) tool.
+
 ## Summary
 
 This repo gathers a python3 program [dhh](./dhh),
